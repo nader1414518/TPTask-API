@@ -87,6 +87,21 @@ namespace TPAdmissionTask.Repository
             }
         }
 
+        public UserModel? LoginUser(string email, string password)
+        {
+            try
+            {
+                email = email.Trim().ToLower();
+                password = password.Trim();
+                var user = _db.Users!.ToList().Where(x => x.Email == email && x.Password == password);
+                return user.FirstOrDefault();
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
         public void UpdateUser(UserModel user)
         {
             try

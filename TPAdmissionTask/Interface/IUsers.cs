@@ -10,5 +10,6 @@ namespace TPAdmissionTask.Interface
         public void UpdateUser(UserModel record);
         public UserModel? DeleteUser(int id);
         public bool CheckUser(int id);
+        public UserModel? LoginUser(string email, string password);
     }
 }

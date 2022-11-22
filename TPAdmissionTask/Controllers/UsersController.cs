@@ -7,7 +7,6 @@ using Microsoft.EntityFrameworkCore;
 
 namespace TPAdmissionTask.Controllers
 {
-    [Route("users")]
     [ApiController]
     public class UsersController : ControllerBase
     {
@@ -20,44 +19,64 @@ namespace TPAdmissionTask.Controllers
 
         // route => users/
         [HttpGet]
+        [Route("users")]
         public async Task<ActionResult<IEnumerable<UserModel>>> Get()
         {
             if (_IUsers == null)
-                return NotFound();
+                return BadRequest("No users found .. ");
 
             var users = _IUsers.GetUsers();
 
             if (users == null)
-                return NotFound();
+                return BadRequest("No users found ... ");
 
             return await Task.FromResult(users);
         }
 
         // route => users/{id}
         [HttpGet("{id}")]
+        [Route("users")]
         public async Task<ActionResult<UserModel>> Get(int id)
         {
             var users = await Task.FromResult(_IUsers?.GetUsers(id));
             if (users == null)
-                return NotFound();
+                return BadRequest("User not found ... ");
 
             return users;
         }
 
-        // route => users/
+        // THIS IS TO GET ALL USERS
+        //// route => users/
         [HttpPost]
+        [Route("users/create")]
         public async Task<ActionResult<UserModel>> Post(UserModel user)
         {
+            var foundUser = _IUsers!.GetUsers()!.ToList().Where(x => x.Email == user.Email);
+            if (foundUser.ToList().Count > 0)
+                return BadRequest("Email already exists .. ");
+
             _IUsers?.AddUser(user);
+            return await Task.FromResult(user);
+        }
+
+        // route => users
+        [HttpPost]
+        [Route("users")]
+        public async Task<ActionResult<UserModel>> Post(LoginRequestModel request)
+        {
+            var user = _IUsers?.LoginUser(request.Email!, request.Password!);
+            if (user == null)
+                return BadRequest("Email or password are wrong ... ");
             return await Task.FromResult(user);
         }
 
         // route => users/{id}
         [HttpPut("{id}")]
+        [Route("users")]
         public async Task<ActionResult<UserModel>> Put(int id, UserModel user)
         {
             if (id != user.UserId)
-                return BadRequest();
+                return BadRequest("Can't find user to update .. ");
 
             try
             {
@@ -66,7 +85,7 @@ namespace TPAdmissionTask.Controllers
             catch (DbUpdateConcurrencyException)
             {
                 if (!UserExists(id))
-                    return NotFound();
+                    return BadRequest("User already exists in database .. ");
                 else
                     throw;
             }
@@ -76,6 +95,7 @@ namespace TPAdmissionTask.Controllers
 
         // route => users/{id}
         [HttpDelete("{id}")]
+        [Route("users")]
         public async Task<ActionResult<UserModel>> Delete(int id)
         {
             var user = _IUsers?.DeleteUser(id);
